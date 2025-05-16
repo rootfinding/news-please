@@ -71,7 +71,7 @@ def parse_date_str(self, s: str) -> str | None:
     if not s:
         return None
     # 1) try date parser
-    dt = dt_parse(s, languages=['es', 'en'])
+    dt = dt_parse(s, languages=['es'])
     if dt:
         return dt.strftime('%Y-%m-%d %H:%M:%S')
     # 2) pattern “13 de mayo de 2025 - 20:05”
