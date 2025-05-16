@@ -4,6 +4,8 @@ from copy import deepcopy
 
 from bs4 import BeautifulSoup
 from dateutil.parser import parse
+from dateparser import parse as dt_parse
+from datetime import datetime
 
 from .abstract_extractor import AbstractExtractor
 
@@ -18,6 +20,13 @@ re_pub_date = re.compile(
 )
 re_class = re.compile("pubdate|timestamp|article_date|articledate|date", re.IGNORECASE)
 
+spanish_pub_date = re.compile(r'(\d{1,2})\s+de\s+([a-záéíóú]+)\s+de\s+(\d{4})(\s*[–-]\s*(\d{1,2}:\d{2}))?', re.I)
+
+MONTHS_ES = {
+    'enero': 1, 'febrero': 2, 'marzo': 3, 'abril': 4, 'mayo': 5,
+    'junio': 6, 'julio': 7, 'agosto': 8, 'septiembre': 9,
+    'setiembre': 9, 'octubre': 10, 'noviembre': 11, 'diciembre': 12,
+}
 
 class DateExtractor(AbstractExtractor):
     """This class implements ArticleDateExtractor as an article extractor. ArticleDateExtractor is
@@ -57,12 +66,27 @@ class DateExtractor(AbstractExtractor):
 
         return publish_date
 
-    def parse_date_str(self, date_string):
-        try:
-            date = parse(date_string)
-            return date.strftime('%Y-%m-%d %H:%M:%S')
-        except:
-            return None
+
+def parse_date_str(self, s: str) -> str | None:
+    if not s:
+        return None
+    # 1) try date parser
+    dt = dt_parse(s, languages=['es', 'en'])
+    if dt:
+        return dt.strftime('%Y-%m-%d %H:%M:%S')
+    # 2) pattern “13 de mayo de 2025 - 20:05”
+    m = spanish_pub_date.search(s.lower())
+    if m:
+        d, m_es, y, _, hm = m.groups()
+        h, mi = (hm or '00:00').split(':')
+        dt = datetime(int(y), MONTHS_ES[m_es], int(d), int(h), int(mi))
+        return dt.strftime('%Y-%m-%d %H:%M:%S')
+    # 3) fallback dateutil (english)
+    try:
+        return parse(s).strftime('%Y-%m-%d %H:%M:%S')
+    except Exception:
+        return None
+
 
     def _extract_from_url(self, url):
         """Try to extract from the article URL - simple but might work as a fallback"""
