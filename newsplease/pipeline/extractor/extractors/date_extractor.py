@@ -94,6 +94,12 @@ class DateExtractor(AbstractExtractor):
                 logger.error(f"HTML content could not be processed for URL: {url}")
                 return None
 
+            logger.info(f"Attempting HTML Tag extraction for {url}")
+            publish_date = self._extract_from_html_tag(html_soup)
+            if publish_date:
+                logger.info(f"Date found via HTML Tags for {url}: {publish_date}")
+                return publish_date
+
             logger.info(f"Attempting JSON-LD extraction for {url}")
             publish_date = self._extract_from_json(html_soup)
             if publish_date:
@@ -104,12 +110,6 @@ class DateExtractor(AbstractExtractor):
             publish_date = self._extract_from_meta(html_soup)
             if publish_date:
                 logger.info(f"Date found via Meta Tags for {url}: {publish_date}")
-                return publish_date
-
-            logger.info(f"Attempting HTML Tag extraction for {url}")
-            publish_date = self._extract_from_html_tag(html_soup)
-            if publish_date:
-                logger.info(f"Date found via HTML Tags for {url}: {publish_date}")
                 return publish_date
             
             logger.info(f"Attempting URL extraction for {url}")
