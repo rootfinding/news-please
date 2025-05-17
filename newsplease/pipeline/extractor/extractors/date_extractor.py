@@ -39,7 +39,44 @@ MONTHS_ES = {
 
 # Preferred meta tags for extraction, ordered by preference
 # Each dict: 'attr_type' (name, property, itemprop, http-equiv), 'attr_value', 'content_key' (usually 'content')
-PREFERRED_META_TAGS =
+PREFERRED_META_TAGS = [
+    # More specific and standard meta tags first
+    {'attr_type': 'property', 'attr_value': 'article:published_time', 'content_key': 'content'},
+    {'attr_type': 'property', 'attr_value': 'og:article:published_time', 'content_key': 'content'},
+    {'attr_type': 'name', 'attr_value': 'sailthru.date', 'content_key': 'content'},
+    {'attr_type': 'itemprop', 'attr_value': 'datePublished', 'content_key': 'content'},
+    {'attr_type': 'name', 'attr_value': 'datePublished', 'content_key': 'content'}, # Some sites might use name="datePublished"
+
+    # Common variations from your original list and best practices
+    {'attr_type': 'name', 'attr_value': 'pubdate', 'content_key': 'content'},
+    {'attr_type': 'name', 'attr_value': 'publishdate', 'content_key': 'content'},
+    {'attr_type': 'name', 'attr_value': 'timestamp', 'content_key': 'content'},
+    {'attr_type': 'name', 'attr_value': 'Date', 'content_key': 'content'},
+    {'attr_type': 'name', 'attr_value': 'article.published', 'content_key': 'content'},
+    {'attr_type': 'name', 'attr_value': 'published-date', 'content_key': 'content'},
+    {'attr_type': 'name', 'attr_value': 'article.created', 'content_key': 'content'},
+    {'attr_type': 'name', 'attr_value': 'article_date_original', 'content_key': 'content'},
+    {'attr_type': 'name', 'attr_value': 'DATE_PUBLISHED', 'content_key': 'content'},
+    {'attr_type': 'name', 'attr_value': 'cXenseParse:recs:publishtime', 'content_key': 'content'},
+
+    # Dublin Core
+    {'attr_type': 'name', 'attr_value': 'DC.date.issued', 'content_key': 'content'},
+    {'attr_type': 'name', 'attr_value': 'DC.Date', 'content_key': 'content'},
+    {'attr_type': 'name', 'attr_value': 'DC.date', 'content_key': 'content'},
+    {'attr_type': 'itemprop', 'attr_value': 'dc.date', 'content_key': 'content'}, # As per your original
+    {'attr_type': 'itemprop', 'attr_value': 'dcterms.date', 'content_key': 'content'}, # As per your original
+    {'attr_type': 'itemprop', 'attr_value': 'dcterms.created', 'content_key': 'content'}, # As per your original
+
+    # Less common, but still possible
+    {'attr_type': 'property', 'attr_value': 'bt:pubDate', 'content_key': 'content'}, # As per your original
+    {'attr_type': 'itemprop', 'attr_value': 'dateCreated', 'content_key': 'content'}, # Fallback
+    {'attr_type': 'http-equiv', 'attr_value': 'date', 'content_key': 'content'}, # As per your original
+
+    # Special cases for extracting date from image URLs (use with caution, might be less reliable)
+    # Add a flag like 'is_url_to_parse': True if you want to handle these differently in your loop
+    # {'attr_type': 'property', 'attr_value': 'og:image', 'content_key': 'content', 'is_url_to_parse': True},
+    # {'attr_type': 'itemprop', 'attr_value': 'image', 'content_key': 'content', 'is_url_to_parse': True},
+]
 
 
 class DateExtractor(AbstractExtractor):
@@ -94,12 +131,6 @@ class DateExtractor(AbstractExtractor):
                 logger.error(f"HTML content could not be processed for URL: {url}")
                 return None
 
-            logger.info(f"Attempting HTML Tag extraction for {url}")
-            publish_date = self._extract_from_html_tag(html_soup)
-            if publish_date:
-                logger.info(f"Date found via HTML Tags for {url}: {publish_date}")
-                return publish_date
-
             logger.info(f"Attempting JSON-LD extraction for {url}")
             publish_date = self._extract_from_json(html_soup)
             if publish_date:
@@ -112,6 +143,12 @@ class DateExtractor(AbstractExtractor):
                 logger.info(f"Date found via Meta Tags for {url}: {publish_date}")
                 return publish_date
             
+            logger.info(f"Attempting HTML Tag extraction for {url}")
+            publish_date = self._extract_from_html_tag(html_soup)
+            if publish_date:
+                logger.info(f"Date found via HTML Tags for {url}: {publish_date}")
+                return publish_date
+
             logger.info(f"Attempting URL extraction for {url}")
             publish_date = self._extract_from_url(url)
             if publish_date:
