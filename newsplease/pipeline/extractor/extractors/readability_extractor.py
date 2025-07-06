@@ -44,6 +44,7 @@ class ReadabilityExtractor(AbstractExtractor):
         except Exception:
             short_title = ""
 
+
         article_candidate = ArticleCandidate()
         article_candidate.extractor = self._name
         article_candidate.title = short_title
