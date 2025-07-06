@@ -22,15 +22,19 @@ class ReadabilityExtractor(AbstractExtractor):
         :return: ArticleCandidate containing the recovered article data.
         """
 
-        html = deepcopy(
-            getattr(item["spider_response"], "text", item["spider_response"].body)
-        )
-        if isinstance(html, bytes):
+        html = getattr(item["spider_response"], "text", None)
+        if not isinstance(html, str):
+            html = item["spider_response"].body
+
+        if isinstance(html, (bytes, bytearray)):
             encoding = getattr(item["spider_response"], "encoding", None) or "utf-8"
             html = html.decode(encoding, errors="replace")
 
         doc = Document(html)
-        description = doc.summary()
+        try:
+            description = doc.summary()
+        except Exception:
+            description = ""
 
         article_candidate = ArticleCandidate()
         article_candidate.extractor = self._name
