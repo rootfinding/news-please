@@ -39,9 +39,15 @@ class ReadabilityExtractor(AbstractExtractor):
         except Exception:
             description = ""
 
+        try:
+            short_title = doc.short_title()
+        except Exception:
+            short_title = ""
+
+
         article_candidate = ArticleCandidate()
         article_candidate.extractor = self._name
-        article_candidate.title = doc.short_title()
+        article_candidate.title = short_title
         article_candidate.description = description
         article_candidate.text = self._text(item)
         article_candidate.topimage = self._topimage(item)
