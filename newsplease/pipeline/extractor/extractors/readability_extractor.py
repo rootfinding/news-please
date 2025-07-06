@@ -1,5 +1,3 @@
-from copy import deepcopy
-
 from readability import Document
 
 from .abstract_extractor import AbstractExtractor
@@ -37,7 +35,7 @@ class ReadabilityExtractor(AbstractExtractor):
             description = ""
 
         article_candidate = ArticleCandidate()
-        article_candidate.extractor = self._name
+        article_candidate.extractor = self._name()
         article_candidate.title = doc.short_title()
         article_candidate.description = description
         article_candidate.text = self._text(item)
