@@ -22,6 +22,7 @@ class ReadabilityExtractor(AbstractExtractor):
         :return: ArticleCandidate containing the recovered article data.
         """
 
+        # Handle encoding properly - convert bytes to string
         html = getattr(item["spider_response"], "text", None)
         if html is None or isinstance(html, (bytes, bytearray)):
             body = getattr(item["spider_response"], "body", b"")
